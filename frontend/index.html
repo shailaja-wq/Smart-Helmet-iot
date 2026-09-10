@@ -1,24 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>SafeRider IoT | Smart Helmet Emergency Command Center</title>
-  
+
   <!-- Modern Typography -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  
+  <link
+    href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+
   <!-- FontAwesome Icons -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-  
+
   <!-- Leaflet Map CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
 
   <!-- Custom Styles -->
   <link rel="stylesheet" href="css/style.css">
 </head>
+
 <body class="theme-dark">
 
   <!-- TOP APP HEADER -->
@@ -29,7 +33,7 @@
           <i class="fa-solid fa-helmet-safety"></i>
         </div>
         <div class="brand-text">
-          <span class="brand-title">SafeRider <span class="accent-text">IoT</span></span>
+          <span class="brand-title">SafeRide <span class="accent-text">IoT</span></span>
           <span class="brand-subtitle">Smart Helmet & Autonomous Emergency Alert System</span>
         </div>
       </div>
@@ -106,10 +110,10 @@
 
   <!-- MAIN COCKPIT DASHBOARD -->
   <main class="dashboard-container">
-    
+
     <!-- ROW 1: CORE KPI STATUS CARDS -->
     <section class="kpi-grid">
-      
+
       <!-- Card 1: Helmet Wear Sensor -->
       <div class="kpi-card" id="cardHelmetWear">
         <div class="kpi-header">
@@ -168,10 +172,10 @@
 
     <!-- ROW 2: SPLIT COCKPIT (DIGITAL TWIN & SIMULATOR vs GPS MAP & TELEGRAM) -->
     <div class="cockpit-split-grid">
-      
+
       <!-- LEFT COLUMN: DIGITAL TWIN & HARDWARE SIMULATOR -->
       <div class="cockpit-col">
-        
+
         <!-- PANEL: DIGITAL TWIN HUD -->
         <div class="glass-panel">
           <div class="panel-header">
@@ -181,49 +185,51 @@
             </div>
             <span class="badge-live">LIVE TELEMETRY</span>
           </div>
-          
+
           <div class="digital-twin-wrapper">
-            
+
             <!-- Helmet Graphic & Sensor Overlays -->
             <div class="helmet-visual-container">
               <div class="helmet-graphic">
                 <svg viewBox="0 0 240 200" class="helmet-svg">
                   <defs>
                     <linearGradient id="helmetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#1e293b"/>
-                      <stop offset="50%" stop-color="#0f172a"/>
-                      <stop offset="100%" stop-color="#020617"/>
+                      <stop offset="0%" stop-color="#1e293b" />
+                      <stop offset="50%" stop-color="#0f172a" />
+                      <stop offset="100%" stop-color="#020617" />
                     </linearGradient>
                     <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.8"/>
-                      <stop offset="100%" stop-color="#4facfe" stop-opacity="0.3"/>
+                      <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.8" />
+                      <stop offset="100%" stop-color="#4facfe" stop-opacity="0.3" />
                     </linearGradient>
                   </defs>
 
                   <!-- Helmet Shell Outer -->
-                  <path d="M 40 130 C 30 70, 70 20, 140 20 C 200 20, 220 70, 210 130 C 205 160, 180 180, 130 180 C 70 180, 45 160, 40 130 Z" 
-                        fill="url(#helmetGrad)" stroke="#38bdf8" stroke-width="3" />
-                  
+                  <path
+                    d="M 40 130 C 30 70, 70 20, 140 20 C 200 20, 220 70, 210 130 C 205 160, 180 180, 130 180 C 70 180, 45 160, 40 130 Z"
+                    fill="url(#helmetGrad)" stroke="#38bdf8" stroke-width="3" />
+
                   <!-- Visor Glass -->
-                  <path d="M 70 70 C 100 50, 170 50, 195 80 C 185 125, 140 135, 75 120 Z" 
-                        fill="url(#visorGrad)" stroke="#00ffff" stroke-width="2" />
-                  
+                  <path d="M 70 70 C 100 50, 170 50, 195 80 C 185 125, 140 135, 75 120 Z" fill="url(#visorGrad)"
+                    stroke="#00ffff" stroke-width="2" />
+
                   <!-- Ventilation Ports & Aerodynamics -->
-                  <path d="M 120 30 L 150 30" stroke="#00f2fe" stroke-width="3" stroke-linecap="round"/>
-                  <path d="M 110 38 L 160 38" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+                  <path d="M 120 30 L 150 30" stroke="#00f2fe" stroke-width="3" stroke-linecap="round" />
+                  <path d="M 110 38 L 160 38" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" />
 
                   <!-- Chin Guard Area (MQ-3 Alcohol Sensor Zone) -->
-                  <rect x="75" y="140" width="40" height="25" rx="6" fill="#1e293b" stroke="#ffaa00" stroke-width="2" id="svgSensorMq3"/>
-                  <circle cx="95" cy="152" r="5" fill="#ffaa00" id="svgLedAlcohol"/>
+                  <rect x="75" y="140" width="40" height="25" rx="6" fill="#1e293b" stroke="#ffaa00" stroke-width="2"
+                    id="svgSensorMq3" />
+                  <circle cx="95" cy="152" r="5" fill="#ffaa00" id="svgLedAlcohol" />
 
                   <!-- Eye Visor Zone (IR Drowsiness Sensor) -->
-                  <circle cx="110" cy="85" r="7" fill="#00ffcc" id="svgSensorEye"/>
+                  <circle cx="110" cy="85" r="7" fill="#00ffcc" id="svgSensorEye" />
 
                   <!-- Crown Area (MPU-6050 Accelerometer/Gyro) -->
-                  <circle cx="135" cy="48" r="6" fill="#00f2fe" id="svgSensorMpu"/>
+                  <circle cx="135" cy="48" r="6" fill="#00f2fe" id="svgSensorMpu" />
 
                   <!-- Ear/Strap Wear Switch -->
-                  <rect x="52" y="140" width="12" height="20" rx="3" fill="#22c55e" id="svgSensorStrap"/>
+                  <rect x="52" y="140" width="12" height="20" rx="3" fill="#22c55e" id="svgSensorStrap" />
                 </svg>
               </div>
 
@@ -285,7 +291,7 @@
           </div>
 
           <div class="simulator-controls">
-            
+
             <!-- Group 1: Helmet Wear & Buckle -->
             <div class="sim-row">
               <div class="sim-label-wrap">
@@ -372,7 +378,7 @@
 
       <!-- RIGHT COLUMN: LIVE GPS MAP & TELEGRAM INTEGRATION -->
       <div class="cockpit-col">
-        
+
         <!-- PANEL: LIVE GPS TRACKING MAP (Leaflet.js) -->
         <div class="glass-panel">
           <div class="panel-header">
@@ -388,14 +394,15 @@
 
           <div class="map-wrapper">
             <div id="gpsMap" class="leaflet-map-element"></div>
-            
+
             <!-- Overlay Map HUD -->
             <div class="map-overlay-hud">
               <div class="hud-coords">
                 <span class="coords-label">COORDINATES:</span>
                 <span class="coords-val" id="coordsText">17.385044° N, 78.486671° E</span>
               </div>
-              <a href="https://www.google.com/maps?q=17.385044,78.486671" target="_blank" class="btn-external-maps" id="googleMapsLink">
+              <a href="https://www.google.com/maps?q=17.385044,78.486671" target="_blank" class="btn-external-maps"
+                id="googleMapsLink">
                 <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Google Maps
               </a>
             </div>
@@ -413,15 +420,18 @@
           </div>
 
           <div class="telegram-config-body">
-            
+
             <!-- Quick instructions toggle -->
             <details class="tg-setup-details">
               <summary><i class="fa-solid fa-circle-question"></i> How to link your Telegram in 1 minute</summary>
               <div class="tg-guide-box">
                 <ol>
-                  <li>Open Telegram and message <code>@BotFather</code>. Send <code>/newbot</code> to get your <b>Bot Token</b>.</li>
-                  <li>Message <code>@userinfobot</code> or your new bot and press <b>Start</b> to get your numeric <b>Chat ID</b>.</li>
-                  <li>Paste both below and click <b>Save & Test</b> to receive an immediate verification alert on your phone!</li>
+                  <li>Open Telegram and message <code>@BotFather</code>. Send <code>/newbot</code> to get your <b>Bot
+                      Token</b>.</li>
+                  <li>Message <code>@userinfobot</code> or your new bot and press <b>Start</b> to get your numeric
+                    <b>Chat ID</b>.</li>
+                  <li>Paste both below and click <b>Save & Test</b> to receive an immediate verification alert on your
+                    phone!</li>
                 </ol>
               </div>
             </details>
@@ -471,25 +481,25 @@
                 <i class="fa-brands fa-telegram"></i> Telegram SOS Message Preview
               </div>
               <div class="preview-content" id="tgMessagePreview">
-🚨 *EMERGENCY SOS: SMART HELMET ACCIDENT DETECTED* 🚨
-━━━━━━━━━━━━━━━━━━━━━━━━━━
-⚠️ *Incident:* ROAD ACCIDENT (HIGH-G IMPACT & VEHICLE TILT)
-🔴 *Severity:* CRITICAL
-👤 *Rider:* Alex Mercer (Blood Group: O+ Positive)
-🏍️ *Vehicle ID:* SR-HELMET-902
-🛑 *Engine Ignition:* DISABLED (Relay Locked)
+                🚨 *EMERGENCY SOS: SMART HELMET ACCIDENT DETECTED* 🚨
+                ━━━━━━━━━━━━━━━━━━━━━━━━━━
+                ⚠️ *Incident:* ROAD ACCIDENT (HIGH-G IMPACT & VEHICLE TILT)
+                🔴 *Severity:* CRITICAL
+                👤 *Rider:* Alex Mercer (Blood Group: O+ Positive)
+                🏍️ *Vehicle ID:* SR-HELMET-902
+                🛑 *Engine Ignition:* DISABLED (Relay Locked)
 
-📊 *Telemetry at Impact:*
-• *Impact Force:* 4.80 G
-• *Speed:* 42.5 km/h
-• *BAC Alcohol Level:* 45 PPM (Sober)
-• *Tilt Angle:* 75.0°
+                📊 *Telemetry at Impact:*
+                • *Impact Force:* 4.80 G
+                • *Speed:* 42.5 km/h
+                • *BAC Alcohol Level:* 45 PPM (Sober)
+                • *Tilt Angle:* 75.0°
 
-📍 *Live Accident Coordinates:*
-https://www.google.com/maps?q=17.385044,78.486671
+                📍 *Live Accident Coordinates:*
+                https://www.google.com/maps?q=17.385044,78.486671
 
-⏰ *Time:* Instant Autonomous Dispatch
-🚑 *ACTION REQUIRED:* Paramedics alerted with turn-by-turn navigation!
+                ⏰ *Time:* Instant Autonomous Dispatch
+                🚑 *ACTION REQUIRED:* Paramedics alerted with turn-by-turn navigation!
               </div>
             </div>
 
@@ -502,7 +512,7 @@ https://www.google.com/maps?q=17.385044,78.486671
 
     <!-- ROW 3: REAL-TIME TELEMETRY CHARTS & BLACK BOX INCIDENT LOG -->
     <div class="bottom-analytics-grid">
-      
+
       <!-- Chart Panel -->
       <div class="glass-panel">
         <div class="panel-header">
@@ -561,10 +571,11 @@ https://www.google.com/maps?q=17.385044,78.486671
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <!-- Chart.js -->
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
-  
+
   <!-- SafeRider Modular Scripts -->
   <script src="js/audio.js"></script>
   <script src="js/simulator.js"></script>
   <script src="js/app.js"></script>
 </body>
+
 </html>
