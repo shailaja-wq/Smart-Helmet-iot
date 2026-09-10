@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SafeRider IoT | Smart Helmet Emergency Command Center</title>
+  
+  <!-- Modern Typography -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Leaflet Map CSS -->
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="theme-dark">
+
+  <!-- TOP APP HEADER -->
+  <header class="app-header">
+    <div class="header-left">
+      <div class="brand-logo">
+        <div class="logo-icon-pulse">
+          <i class="fa-solid fa-helmet-safety"></i>
+        </div>
+        <div class="brand-text">
+          <span class="brand-title">SafeRider <span class="accent-text">IoT</span></span>
+          <span class="brand-subtitle">Smart Helmet & Autonomous Emergency Alert System</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="header-center">
+      <div class="system-status-pill" id="systemStatusPill">
+        <span class="status-dot"></span>
+        <span class="status-label" id="systemStatusLabel">SYSTEM ARMED & READY</span>
+      </div>
+    </div>
+
+    <div class="header-right">
+      <div class="telemetry-chip">
+        <i class="fa-solid fa-satellite-dish"></i>
+        <span id="satellitesBadge">9 Sats</span>
+      </div>
+      <div class="telemetry-chip">
+        <i class="fa-solid fa-battery-three-quarters text-success"></i>
+        <span id="batteryBadge">94%</span>
+      </div>
+      <div class="telemetry-chip">
+        <i class="fa-solid fa-wifi text-cyan" id="networkIcon"></i>
+        <span id="networkBadge">Live (WS)</span>
+      </div>
+      <button class="btn-icon" id="audioToggleBtn" title="Toggle Sound Effects & Voice Alerts">
+        <i class="fa-solid fa-volume-high" id="audioIcon"></i>
+      </button>
+    </div>
+  </header>
+
+  <!-- CRASH EMERGENCY OVERLAY MODAL (15-SECOND GRACE COUNTDOWN) -->
+  <div class="emergency-modal-backdrop" id="emergencyModal">
+    <div class="emergency-modal-card">
+      <div class="modal-siren-halo"></div>
+      <div class="modal-header-danger">
+        <i class="fa-solid fa-triangle-exclamation modal-icon"></i>
+        <h2>CRITICAL ACCIDENT DETECTED!</h2>
+        <p>Severe impact and motorcycle fall registered by MPU-6050 sensor.</p>
+      </div>
+
+      <div class="countdown-radial-container">
+        <svg class="radial-svg" viewBox="0 0 160 160">
+          <circle class="radial-bg" cx="80" cy="80" r="70"></circle>
+          <circle class="radial-progress" id="radialProgressCircle" cx="80" cy="80" r="70"></circle>
+        </svg>
+        <div class="radial-timer-text">
+          <span class="countdown-number" id="countdownSeconds">15</span>
+          <span class="countdown-unit">SECONDS</span>
+        </div>
+      </div>
+
+      <p class="modal-instruction">
+        If you are conscious and safe, press the button below or on your helmet to cancel the emergency alert.
+      </p>
+
+      <div class="modal-actions">
+        <button class="btn-cancel-safe" id="cancelEmergencyBtn">
+          <i class="fa-solid fa-circle-check"></i>
+          <span>I AM OK — CANCEL ALERT</span>
+        </button>
+        <button class="btn-force-dispatch" id="forceDispatchBtn">
+          <i class="fa-solid fa-paper-plane"></i>
+          <span>DISPATCH SOS NOW</span>
+        </button>
+      </div>
+
+      <div class="dispatch-preview-info">
+        <i class="fa-brands fa-telegram text-cyan"></i>
+        <span>Dispatches GPS coordinates & crash metrics to linked Telegram</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN COCKPIT DASHBOARD -->
+  <main class="dashboard-container">
+    
+    <!-- ROW 1: CORE KPI STATUS CARDS -->
+    <section class="kpi-grid">
+      
+      <!-- Card 1: Helmet Wear Sensor -->
+      <div class="kpi-card" id="cardHelmetWear">
+        <div class="kpi-header">
+          <span class="kpi-title">Helmet Compliance</span>
+          <i class="fa-solid fa-shield-halved kpi-icon"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-main-val" id="helmetWearStatus">WORN</div>
+          <div class="kpi-subtext" id="helmetWearSub">Contact switch engaged</div>
+        </div>
+        <div class="kpi-indicator-bar safe" id="helmetWearBar"></div>
+      </div>
+
+      <!-- Card 2: Alcohol BAC Detection -->
+      <div class="kpi-card" id="cardAlcohol">
+        <div class="kpi-header">
+          <span class="kpi-title">Breath Alcohol (MQ-3)</span>
+          <i class="fa-solid fa-wine-glass-empty kpi-icon"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-main-val"><span id="alcoholVal">45</span> <span class="val-unit">PPM</span></div>
+          <div class="kpi-subtext" id="alcoholStatusText">Sober (Limit: 350 PPM)</div>
+        </div>
+        <div class="kpi-meter">
+          <div class="kpi-meter-fill safe" id="alcoholMeterFill" style="width: 12%;"></div>
+        </div>
+      </div>
+
+      <!-- Card 3: Drowsiness & Blink Sensor -->
+      <div class="kpi-card" id="cardDrowsiness">
+        <div class="kpi-header">
+          <span class="kpi-title">Drowsiness & Fatigue</span>
+          <i class="fa-solid fa-eye kpi-icon"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-main-val" id="drowsyStatusVal">ALERT</div>
+          <div class="kpi-subtext" id="drowsySubText">Eye closure: Normal</div>
+        </div>
+        <div class="kpi-indicator-bar safe" id="drowsyIndicatorBar"></div>
+      </div>
+
+      <!-- Card 4: Smart Ignition Relay Interlock -->
+      <div class="kpi-card highlight-glow" id="cardIgnition">
+        <div class="kpi-header">
+          <span class="kpi-title">Ignition Interlock</span>
+          <i class="fa-solid fa-key kpi-icon"></i>
+        </div>
+        <div class="kpi-body">
+          <div class="kpi-main-val text-success" id="ignitionStatusVal">ARMED</div>
+          <div class="kpi-subtext" id="ignitionSubText">Engine starter unlocked</div>
+        </div>
+        <div class="kpi-indicator-bar armed" id="ignitionIndicatorBar"></div>
+      </div>
+
+    </section>
+
+    <!-- ROW 2: SPLIT COCKPIT (DIGITAL TWIN & SIMULATOR vs GPS MAP & TELEGRAM) -->
+    <div class="cockpit-split-grid">
+      
+      <!-- LEFT COLUMN: DIGITAL TWIN & HARDWARE SIMULATOR -->
+      <div class="cockpit-col">
+        
+        <!-- PANEL: DIGITAL TWIN HUD -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-microchip text-cyan"></i>
+              <span>Digital Twin Helmet HUD</span>
+            </div>
+            <span class="badge-live">LIVE TELEMETRY</span>
+          </div>
+          
+          <div class="digital-twin-wrapper">
+            
+            <!-- Helmet Graphic & Sensor Overlays -->
+            <div class="helmet-visual-container">
+              <div class="helmet-graphic">
+                <svg viewBox="0 0 240 200" class="helmet-svg">
+                  <defs>
+                    <linearGradient id="helmetGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#1e293b"/>
+                      <stop offset="50%" stop-color="#0f172a"/>
+                      <stop offset="100%" stop-color="#020617"/>
+                    </linearGradient>
+                    <linearGradient id="visorGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                      <stop offset="0%" stop-color="#00f2fe" stop-opacity="0.8"/>
+                      <stop offset="100%" stop-color="#4facfe" stop-opacity="0.3"/>
+                    </linearGradient>
+                  </defs>
+
+                  <!-- Helmet Shell Outer -->
+                  <path d="M 40 130 C 30 70, 70 20, 140 20 C 200 20, 220 70, 210 130 C 205 160, 180 180, 130 180 C 70 180, 45 160, 40 130 Z" 
+                        fill="url(#helmetGrad)" stroke="#38bdf8" stroke-width="3" />
+                  
+                  <!-- Visor Glass -->
+                  <path d="M 70 70 C 100 50, 170 50, 195 80 C 185 125, 140 135, 75 120 Z" 
+                        fill="url(#visorGrad)" stroke="#00ffff" stroke-width="2" />
+                  
+                  <!-- Ventilation Ports & Aerodynamics -->
+                  <path d="M 120 30 L 150 30" stroke="#00f2fe" stroke-width="3" stroke-linecap="round"/>
+                  <path d="M 110 38 L 160 38" stroke="#38bdf8" stroke-width="2" stroke-linecap="round"/>
+
+                  <!-- Chin Guard Area (MQ-3 Alcohol Sensor Zone) -->
+                  <rect x="75" y="140" width="40" height="25" rx="6" fill="#1e293b" stroke="#ffaa00" stroke-width="2" id="svgSensorMq3"/>
+                  <circle cx="95" cy="152" r="5" fill="#ffaa00" id="svgLedAlcohol"/>
+
+                  <!-- Eye Visor Zone (IR Drowsiness Sensor) -->
+                  <circle cx="110" cy="85" r="7" fill="#00ffcc" id="svgSensorEye"/>
+
+                  <!-- Crown Area (MPU-6050 Accelerometer/Gyro) -->
+                  <circle cx="135" cy="48" r="6" fill="#00f2fe" id="svgSensorMpu"/>
+
+                  <!-- Ear/Strap Wear Switch -->
+                  <rect x="52" y="140" width="12" height="20" rx="3" fill="#22c55e" id="svgSensorStrap"/>
+                </svg>
+              </div>
+
+              <!-- Sensor HUD Callout Badges -->
+              <div class="sensor-callout callout-top">
+                <span class="callout-tag">MPU-6050</span>
+                <span class="callout-val" id="gForceHudVal">1.02 G</span>
+              </div>
+              <div class="sensor-callout callout-eye">
+                <span class="callout-tag">IR EYE</span>
+                <span class="callout-val" id="eyeSensorHudVal">OPEN</span>
+              </div>
+              <div class="sensor-callout callout-chin">
+                <span class="callout-tag">MQ-3</span>
+                <span class="callout-val" id="alcoholHudVal">45 PPM</span>
+              </div>
+              <div class="sensor-callout callout-buckle">
+                <span class="callout-tag">STRAP</span>
+                <span class="callout-val" id="strapHudVal">LOCKED</span>
+              </div>
+            </div>
+
+            <!-- Orientation & Bike Horizon Gauges -->
+            <div class="twin-metrics-col">
+              <div class="horizon-gauge-box">
+                <span class="metric-label">Head Tilt / Horizon</span>
+                <div class="horizon-visual">
+                  <div class="horizon-line" id="horizonLine"></div>
+                  <div class="horizon-crosshair"></div>
+                </div>
+                <div class="horizon-coords">
+                  <span>Roll: <b id="rollAngleVal">1.2°</b></span>
+                  <span>Pitch: <b id="pitchAngleVal">-0.5°</b></span>
+                </div>
+              </div>
+
+              <!-- Push To Start Ignition Button Simulation -->
+              <div class="engine-test-box">
+                <span class="metric-label">Bike Engine Starter Test</span>
+                <button class="btn-engine-start ready" id="engineStartBtn">
+                  <i class="fa-solid fa-power-off"></i>
+                  <span id="engineBtnLabel">START ENGINE</span>
+                </button>
+                <div class="engine-hint" id="engineFeedbackHint">Engine ready to ignite. System safe.</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- PANEL: INTERACTIVE HARDWARE SIMULATOR CONTROLS -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-sliders text-cyan"></i>
+              <span>Interactive Hardware Simulator Console</span>
+            </div>
+            <span class="panel-hint">Test Edge Cases & Alerts</span>
+          </div>
+
+          <div class="simulator-controls">
+            
+            <!-- Group 1: Helmet Wear & Buckle -->
+            <div class="sim-row">
+              <div class="sim-label-wrap">
+                <label><i class="fa-solid fa-hard-hat text-cyan"></i> Helmet Presence</label>
+                <span class="sim-sub">Toggle contact switch on helmet crown</span>
+              </div>
+              <div class="sim-actions">
+                <button class="btn-toggle active" id="simWearToggle">
+                  <i class="fa-solid fa-check"></i> <span>Helmet Worn</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 2: Alcohol Breath Slider & Presets -->
+            <div class="sim-row-stacked">
+              <div class="sim-slider-header">
+                <label><i class="fa-solid fa-wine-bottle text-amber"></i> Alcohol Breath Concentration (PPM)</label>
+                <span class="sim-val-display" id="simAlcoholDisplay">45 PPM</span>
+              </div>
+              <input type="range" id="simAlcoholSlider" min="0" max="800" value="45" class="sim-range">
+              <div class="sim-preset-btns">
+                <button class="btn-preset" data-ppm="25">Sober (25 PPM)</button>
+                <button class="btn-preset" data-ppm="220">Borderline (220 PPM)</button>
+                <button class="btn-preset btn-preset-danger" data-ppm="520">🚨 Intoxicated (520 PPM)</button>
+              </div>
+            </div>
+
+            <!-- Group 3: Drowsiness & Eye Closure -->
+            <div class="sim-row">
+              <div class="sim-label-wrap">
+                <label><i class="fa-solid fa-bed text-warning"></i> Drowsiness / Micro-Sleep</label>
+                <span class="sim-sub">Simulate eye closure > 1.8s or head drooping</span>
+              </div>
+              <div class="sim-actions">
+                <button class="btn-action" id="simDrowsyTriggerBtn">
+                  <i class="fa-solid fa-moon"></i> <span>Trigger Micro-Sleep</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 4: Accident & Crash Triggers -->
+            <div class="sim-row-stacked">
+              <div class="sim-slider-header">
+                <label><i class="fa-solid fa-car-burst text-danger"></i> Crash & Impact Generator</label>
+                <span class="sim-sub">Simulate sudden G-force spike & bike tilt fall</span>
+              </div>
+              <div class="crash-triggers-grid">
+                <button class="btn-crash-preset bump" id="btnSimBump">
+                  <i class="fa-solid fa-road"></i>
+                  <span>Pothole / Bump</span>
+                  <small>1.4 G (Ignored)</small>
+                </button>
+                <button class="btn-crash-preset severe" id="btnSimSevereCrash">
+                  <i class="fa-solid fa-triangle-exclamation"></i>
+                  <span>Severe Collision</span>
+                  <small>4.8 G + 75° Tilt</small>
+                </button>
+                <button class="btn-crash-preset skid" id="btnSimSkid">
+                  <i class="fa-solid fa-arrows-down-to-line"></i>
+                  <span>Skid Fall</span>
+                  <small>2.9 G + 80° Tilt</small>
+                </button>
+              </div>
+            </div>
+
+            <!-- Group 5: Manual SOS Panic Trigger -->
+            <div class="sim-row sim-sos-row">
+              <div class="sim-label-wrap">
+                <label class="text-danger"><i class="fa-solid fa-tower-broadcast"></i> Manual SOS Button</label>
+                <span class="sim-sub">Bypasses grace period, sends instant Telegram alert</span>
+              </div>
+              <div class="sim-actions">
+                <button class="btn-sos-panic" id="simSosBtn">
+                  <i class="fa-solid fa-bell"></i>
+                  <span>EMERGENCY SOS</span>
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+      <!-- RIGHT COLUMN: LIVE GPS MAP & TELEGRAM INTEGRATION -->
+      <div class="cockpit-col">
+        
+        <!-- PANEL: LIVE GPS TRACKING MAP (Leaflet.js) -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-solid fa-map-location-dot text-cyan"></i>
+              <span>Live GPS Satellite Tracking</span>
+            </div>
+            <div class="map-hud-meta">
+              <span class="meta-item"><i class="fa-solid fa-gauge-high"></i> <b id="mapSpeed">42.5</b> km/h</span>
+              <span class="meta-item"><i class="fa-solid fa-mountain"></i> <b id="mapAlt">536</b> m</span>
+            </div>
+          </div>
+
+          <div class="map-wrapper">
+            <div id="gpsMap" class="leaflet-map-element"></div>
+            
+            <!-- Overlay Map HUD -->
+            <div class="map-overlay-hud">
+              <div class="hud-coords">
+                <span class="coords-label">COORDINATES:</span>
+                <span class="coords-val" id="coordsText">17.385044° N, 78.486671° E</span>
+              </div>
+              <a href="https://www.google.com/maps?q=17.385044,78.486671" target="_blank" class="btn-external-maps" id="googleMapsLink">
+                <i class="fa-solid fa-arrow-up-right-from-square"></i> Open Google Maps
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- PANEL: TELEGRAM EMERGENCY ALERT INTEGRATION -->
+        <div class="glass-panel">
+          <div class="panel-header">
+            <div class="panel-title">
+              <i class="fa-brands fa-telegram text-cyan"></i>
+              <span>Telegram Emergency Bot Dispatcher</span>
+            </div>
+            <span class="badge-active" id="tgConfigBadge">READY</span>
+          </div>
+
+          <div class="telegram-config-body">
+            
+            <!-- Quick instructions toggle -->
+            <details class="tg-setup-details">
+              <summary><i class="fa-solid fa-circle-question"></i> How to link your Telegram in 1 minute</summary>
+              <div class="tg-guide-box">
+                <ol>
+                  <li>Open Telegram and message <code>@BotFather</code>. Send <code>/newbot</code> to get your <b>Bot Token</b>.</li>
+                  <li>Message <code>@userinfobot</code> or your new bot and press <b>Start</b> to get your numeric <b>Chat ID</b>.</li>
+                  <li>Paste both below and click <b>Save & Test</b> to receive an immediate verification alert on your phone!</li>
+                </ol>
+              </div>
+            </details>
+
+            <div class="tg-form-grid">
+              <div class="form-group">
+                <label>Telegram Bot Token:</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-key"></i>
+                  <input type="password" id="tgBotTokenInput" placeholder="e.g. 7123456789:AAHk..." autocomplete="off">
+                </div>
+              </div>
+              <div class="form-group">
+                <label>Linked Telegram Chat ID / Number:</label>
+                <div class="input-with-icon">
+                  <i class="fa-solid fa-id-badge"></i>
+                  <input type="text" id="tgChatIdInput" placeholder="e.g. 123456789 or @channel">
+                </div>
+              </div>
+            </div>
+
+            <div class="tg-form-grid">
+              <div class="form-group">
+                <label>Rider Name & Vehicle:</label>
+                <input type="text" id="riderNameInput" value="Alex Mercer (Vehicle: SR-HELMET-902)">
+              </div>
+              <div class="form-group">
+                <label>Emergency Contact Phone:</label>
+                <input type="text" id="emergencyPhoneInput" value="+1-555-0199 (Family Care)">
+              </div>
+            </div>
+
+            <div class="tg-action-row">
+              <button class="btn-save-tg" id="btnSaveTgConfig">
+                <i class="fa-solid fa-floppy-disk"></i> Save Configuration
+              </button>
+              <button class="btn-test-tg" id="btnTestTgAlert">
+                <i class="fa-solid fa-paper-plane"></i> Send Test Alert to Telegram
+              </button>
+            </div>
+
+            <div class="tg-test-feedback" id="tgTestFeedback" style="display: none;"></div>
+
+            <!-- Live Message Preview Box -->
+            <div class="tg-preview-box">
+              <div class="preview-header">
+                <i class="fa-brands fa-telegram"></i> Telegram SOS Message Preview
+              </div>
+              <div class="preview-content" id="tgMessagePreview">
+🚨 *EMERGENCY SOS: SMART HELMET ACCIDENT DETECTED* 🚨
+━━━━━━━━━━━━━━━━━━━━━━━━━━
+⚠️ *Incident:* ROAD ACCIDENT (HIGH-G IMPACT & VEHICLE TILT)
+🔴 *Severity:* CRITICAL
+👤 *Rider:* Alex Mercer (Blood Group: O+ Positive)
+🏍️ *Vehicle ID:* SR-HELMET-902
+🛑 *Engine Ignition:* DISABLED (Relay Locked)
+
+📊 *Telemetry at Impact:*
+• *Impact Force:* 4.80 G
+• *Speed:* 42.5 km/h
+• *BAC Alcohol Level:* 45 PPM (Sober)
+• *Tilt Angle:* 75.0°
+
+📍 *Live Accident Coordinates:*
+https://www.google.com/maps?q=17.385044,78.486671
+
+⏰ *Time:* Instant Autonomous Dispatch
+🚑 *ACTION REQUIRED:* Paramedics alerted with turn-by-turn navigation!
+              </div>
+            </div>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+
+    <!-- ROW 3: REAL-TIME TELEMETRY CHARTS & BLACK BOX INCIDENT LOG -->
+    <div class="bottom-analytics-grid">
+      
+      <!-- Chart Panel -->
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-chart-line text-cyan"></i>
+            <span>Real-time Telemetry Stream (G-Force, Alcohol PPM, Speed)</span>
+          </div>
+          <div class="chart-legend-custom">
+            <span class="legend-chip gforce"><span class="chip-dot"></span> Impact (G)</span>
+            <span class="legend-chip alcohol"><span class="chip-dot"></span> Alcohol (PPM)</span>
+            <span class="legend-chip speed"><span class="chip-dot"></span> Speed (km/h)</span>
+          </div>
+        </div>
+        <div class="chart-container">
+          <canvas id="telemetryChart"></canvas>
+        </div>
+      </div>
+
+      <!-- Black Box Incident Log Panel -->
+      <div class="glass-panel">
+        <div class="panel-header">
+          <div class="panel-title">
+            <i class="fa-solid fa-box-archive text-cyan"></i>
+            <span>Black Box Incident & Alert Log</span>
+          </div>
+          <div class="log-header-actions">
+            <button class="btn-small" id="btnClearLogs"><i class="fa-solid fa-trash"></i> Clear</button>
+            <button class="btn-small" id="btnExportLogs"><i class="fa-solid fa-download"></i> Export JSON</button>
+          </div>
+        </div>
+        <div class="incident-table-wrapper">
+          <table class="incident-table">
+            <thead>
+              <tr>
+                <th>Event / Type</th>
+                <th>Severity</th>
+                <th>Impact / BAC</th>
+                <th>Coordinates</th>
+                <th>Time</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="incidentTableBody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+    </div>
+
+  </main>
+
+  <!-- SCRIPTS -->
+  <!-- Leaflet.js -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  
+  <!-- SafeRider Modular Scripts -->
+  <script src="js/audio.js"></script>
+  <script src="js/simulator.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

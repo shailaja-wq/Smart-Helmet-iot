@@ -1,0 +1,60 @@
+[
+  {
+    "id": "INC-MTMIX7QN",
+    "type": "ROAD_ACCIDENT",
+    "severity": "CRITICAL",
+    "gForce": 4.85,
+    "tiltAngle": 76.5,
+    "latitude": 17.390109,
+    "longitude": 78.498141,
+    "speedKmh": 50.1,
+    "alcoholPpm": 25,
+    "timestamp": "2026-09-04T05:38:56.495Z",
+    "details": "High-Impact Vehicle Collision",
+    "status": "CANCELLED_BY_RIDER",
+    "cancelledAt": "2026-09-04T05:39:00.474Z"
+  },
+  {
+    "id": "INC-MTMIV9X2",
+    "type": "MANUAL_SOS_PANIC",
+    "severity": "HIGH_PRIORITY",
+    "gForce": 1.06,
+    "tiltAngle": -1.6,
+    "latitude": 17.390059,
+    "longitude": 78.49811,
+    "speedKmh": 49.3,
+    "alcoholPpm": 500,
+    "timestamp": "2026-09-04T05:37:26.007Z",
+    "details": "Rider triggered the manual SOS panic button on helmet strap.",
+    "status": "DISPATCHED"
+  },
+  {
+    "id": "INC-MTMIV4BC",
+    "type": "MANUAL_SOS_PANIC",
+    "severity": "HIGH_PRIORITY",
+    "gForce": 1.06,
+    "tiltAngle": -1.6,
+    "latitude": 17.390059,
+    "longitude": 78.49811,
+    "speedKmh": 49.3,
+    "alcoholPpm": 500,
+    "timestamp": "2026-09-04T05:37:18.744Z",
+    "details": "Rider triggered the manual SOS panic button on helmet strap.",
+    "status": "DISPATCHED"
+  },
+  {
+    "id": "INC-MTMIOGXX",
+    "type": "ROAD_ACCIDENT",
+    "severity": "CRITICAL",
+    "gForce": 4.5,
+    "tiltAngle": -2.9,
+    "latitude": 17.391237,
+    "longitude": 78.492988,
+    "speedKmh": 56.4,
+    "alcoholPpm": 500,
+    "timestamp": "2026-09-04T05:32:08.518Z",
+    "details": "High-impact collision and bike tilt detected by MPU6050 sensor.",
+    "status": "CANCELLED_BY_RIDER",
+    "cancelledAt": "2026-09-04T05:32:08.604Z"
+  }
+]
